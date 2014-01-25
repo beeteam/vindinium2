@@ -28,6 +28,8 @@ public class LouvelBFS {
 		this.board = board;
 		this.start = start;
 		this.end = end;
+		System.out.println("Start : " + Utils.positionToString(start));
+		System.out.println("End : " + Utils.positionToString(end));
 
 		this.freeTiles = new ArrayList<>();
 		freeTiles.add("  ");
@@ -37,24 +39,31 @@ public class LouvelBFS {
 		ArrayList<int[]> resultat = new ArrayList<>();
 		traited = new HashSet<>();
 		if (recursive(resultat, start)) {
-			resultat.add(start);
+//			resultat.add(start);
+//			Utils.printList("RESULTAT : ", resultat);
 		}
-
-		resultat.add(end);
+//
+//		resultat.add(end);
+//		Utils.printList("RESULTAT : ", resultat);
 
 		int[] tmp = null;
 		String s = reverse.get(Utils.positionToString(end));
 		tmp = Utils.stringToPosition(s);
+		System.out.println(Utils.positionToString(tmp));
+		resultat.add(tmp);
+		Utils.printList("RESULTAT : ", resultat);
 		while (!equals(tmp, start)) {
 			tmp = Utils.stringToPosition(reverse.get(Utils
 					.positionToString(tmp)));
 			System.out.println(Utils.positionToString(tmp));
 			if (!equals(tmp, start)) {
-				resultat.add(Utils.stringToPosition(reverse.get(Utils
-						.positionToString(tmp))));
+				resultat.add(tmp);
+				Utils.printList("RESULTAT : ", resultat);
 			}
 		}
+		Utils.printList("RESULTAT : ", resultat);
 		Collections.reverse(resultat);
+		Utils.printList("RESULTAT : ", resultat);
 		return resultat;
 	}
 
@@ -84,16 +93,16 @@ public class LouvelBFS {
 					queue.add(is);
 					queueTmp.add(Utils.positionToString(is));
 				}
-				Utils.printList("queue : ", queue);
+				// Utils.printList("queue : ", queue);
 			}
 		}
 
 		this.traited.add(Utils.positionToString(pos));
-		Utils.printSet("Traited : ", traited);
+		// Utils.printSet("Traited : ", traited);
 		int[] p = null;
 		if (!queue.isEmpty()) {
 			p = queue.remove(0);
-			System.out.println("Traitement de : " + Utils.positionToString(p));
+//			System.out.println("Traitement de : " + Utils.positionToString(p));
 		} else {
 			return true;
 		}
