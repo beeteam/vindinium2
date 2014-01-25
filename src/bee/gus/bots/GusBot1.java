@@ -1,6 +1,5 @@
 package bee.gus.bots;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import bee.gus.algo.GusDFSHolder;
@@ -20,9 +19,11 @@ public class GusBot1 implements Bot {
 	
 	
 	public static final int WEAK_LEVEL = 25;
-	public static final int THIRSTY_LEVEL = 70;
+	public static final int ABIT_THIRSTY_LEVEL = 70;
+	public static final int VERY_THIRSTY_LEVEL = 30;
 	
-	public static final int ALGO = 2;
+	
+	public static final int ALGO = 1;
 	
 	
 
@@ -50,31 +51,35 @@ public class GusBot1 implements Bot {
 		{
 			initData(state);
 			System.out.println("turn: "+turn+"/"+totalTurn);
+			System.out.println("------------------------");
 			
 			
 			if(canFight())
 			{
-				if(isMine(westTile())) return Direction.WEST;
-				if(isMine(eastTile())) return Direction.EAST;
-				if(isMine(northTile())) return Direction.NORTH;
-				if(isMine(southTile())) return Direction.SOUTH;
+				if(isMine(westTile())) return shortcut("W->mine!",Direction.WEST);
+				if(isMine(eastTile())) return shortcut("E->mine!",Direction.EAST);
+				if(isMine(northTile())) return shortcut("N->mine!",Direction.NORTH);
+				if(isMine(southTile())) return shortcut("S->mine!",Direction.SOUTH);
 			}
 			
-			if(isThirsty())
+			if(isABitThirsty())
 			{
-				if(isBeer(westTile())) return Direction.WEST;
-				if(isBeer(eastTile())) return Direction.EAST;
-				if(isBeer(northTile())) return Direction.NORTH;
-				if(isBeer(southTile())) return Direction.SOUTH;
+				if(isBeer(westTile())) return shortcut("W->beer!",Direction.WEST);
+				if(isBeer(eastTile())) return shortcut("E->beer!",Direction.EAST);
+				if(isBeer(northTile())) return shortcut("N->beer!",Direction.NORTH);
+				if(isBeer(southTile())) return shortcut("S->beer!",Direction.SOUTH);
 			}
 			
-			if(isHero(westTile())) return Direction.WEST;
-			if(isHero(eastTile())) return Direction.EAST;
-			if(isHero(northTile())) return Direction.NORTH;
-			if(isHero(southTile())) return Direction.SOUTH;
+			if(isAgressive())
+			{
+				if(isHero(westTile())) return shortcut("W->hero!",Direction.WEST);
+				if(isHero(eastTile())) return shortcut("E->hero!",Direction.EAST);
+				if(isHero(northTile())) return shortcut("N->hero!",Direction.NORTH);
+				if(isHero(southTile())) return shortcut("S->hero!",Direction.SOUTH);
+			}
 			
 			
-			if(path==null) strategy();
+			if(path==null) startStrategy();
 			if(hasPath()) return walkInsidePath();
 			
 			
@@ -86,6 +91,18 @@ public class GusBot1 implements Bot {
 			e.printStackTrace();
 			return Direction.STAY;
 		}
+	}
+	
+	
+	
+	
+	
+	
+	private Direction shortcut(String title, Direction d)
+	{
+		resetPath();
+		System.out.println(title+" shortcut to "+d.name+" (life="+me.life+")");
+		return d;
 	}
 	
 	
@@ -113,41 +130,75 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private void strategy() throws Exception
+	private void startStrategy() throws Exception
 	{
+		if(isVeryThirsty())
+			startBeerStrategy();
+		else startMineStrategy();
+	}
+	
+	
+	
+	
+	private void startBeerStrategy() throws Exception
+	{
+		System.out.println("Start beer strategy");
+		int[] end = searchNearestBeer();
+		if(end==null) return;
+		
+		initializePath(me_,end);
+	}
+	
+	
+	
+	
+	private void startMineStrategy() throws Exception
+	{
+		System.out.println("Start mine strategy");
 		int[] end = searchNearestMine();
 		if(end==null) return;
 		
-		path = initializePath(me_,end);
+		initializePath(me_,end);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private void initializePath(int[] start, int[] end) throws Exception
+	{
+		path = computePath(start,end);
 		pathLength = path==null?-1:path.length;
 		index = 0;
 		
-		printFullPath();
-		
-		System.out.println("running path: "+pathToString());
+		System.out.println("path 1: "+pathToString1());
+		System.out.println("path 2: "+pathToString2());
 		System.out.println();
 	}
 	
 	
-	
-	
-	
-	
-	
-	private int[][] initializePath(int[] start, int[] end) throws Exception
+	private int[][] computePath(int[] start, int[] end) throws Exception
 	{
-		if(ALGO==1) return initializePath1(start,end);
-		if(ALGO==2) return initializePath2(start,end);
+		if(ALGO==1) return computePath1(start,end);
+		if(ALGO==2) return computePath2(start,end);
 		throw new Exception("Unknown algo: "+ALGO);
 	}
 	
 	
-	
-	private int[][] initializePath1(int[] start, int[] end) throws Exception
+	private int[][] computePath1(int[] start, int[] end) throws Exception
 	{return new GusDFSHolder(board,start,end).getDistanceArray();}
 	
 	
-	private int[][] initializePath2(int[] start, int[] end) throws Exception
+	private int[][] computePath2(int[] start, int[] end) throws Exception
 	{return new LouvelBFS(board,start,end).getDistanceArray();}
 	
 	
@@ -171,7 +222,7 @@ public class GusBot1 implements Bot {
 		System.out.print("index: "+index+" ");
 		System.out.print("p0: "+toString(p0)+" ");
 		System.out.print("p1: "+toString(p1)+" ");
-		System.out.println("direction: "+d.name);
+		System.out.println("walking to direction: "+d.name);
 		
 		if(index==path.length-2) resetPath();
 		else index++;
@@ -363,40 +414,39 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private String toString(int[] p)
-	{
-		if(p==null) return "null";
-		return "["+p[0]+" "+p[1]+"]";
-	}
 	
 	
-	private String pathToString()
-	{
-		if(path==null) return "no path";
-		return toString(path[0])+" -> "+toString(path[pathLength-1])+" ("+pathLength+")";
-	}
 	
 	
-	private void resetPath()
-	{
-		path=null;
-		pathLength=-1;
-	}
-	
-	private boolean hasPath()
-	{return pathLength>0;}
 	
 	
 	
 	
 	private boolean canFight()
-	{return me.life<=WEAK_LEVEL;}
+	{return me.life>WEAK_LEVEL;}
 	
 	
-	private boolean isThirsty()
-	{return me.life<=THIRSTY_LEVEL;}
+	private boolean isABitThirsty()
+	{return me.life<=ABIT_THIRSTY_LEVEL;}
 	
 	
+	private boolean isVeryThirsty()
+	{return me.life<=VERY_THIRSTY_LEVEL;}
+	
+	
+	private boolean isAgressive()
+	{return me.life<=ABIT_THIRSTY_LEVEL;}
+	
+	
+	
+	
+	
+	
+
+	
+	
+	private String toString(int[] p)
+	{return p==null?"null":"["+p[0]+" "+p[1]+"]";}
 	
 	
 	
@@ -410,12 +460,34 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	public void printFullPath()
+	
+	
+	
+	
+	
+	private void resetPath()
 	{
-		if(path==null) {System.out.println("null");return;}
-		for(int[] is : path)
-		System.out.print("[" + is[0] + " " + is[1] + "]");
-		System.out.println();
+		path=null;
+		pathLength=-1;
 	}
 	
+	private boolean hasPath()
+	{return pathLength>0;}
+
+	
+	
+	private String pathToString1()
+	{
+		if(path==null) return "no path";
+		return toString(path[0])+" -> "+toString(path[pathLength-1])+" ("+pathLength+")";
+	}
+	
+
+	private String pathToString2()
+	{
+		if(path==null) return "no path";
+		StringBuffer b = new StringBuffer();
+		for(int[] p : path) b.append(toString(p));
+		return b.toString();
+	}
 }
