@@ -50,8 +50,8 @@ public class GusBot1 implements Bot {
 		try
 		{
 			initData(state);
-			System.out.println("turn: "+turn+"/"+totalTurn);
-			System.out.println("------------------------");
+			println("turn: "+turn+"/"+totalTurn+" life: "+me.life);
+			println("------------------------");
 			
 			
 			if(canFight())
@@ -83,7 +83,7 @@ public class GusBot1 implements Bot {
 			if(hasPath()) return walkInsidePath();
 			
 			
-			System.out.println("IDLE (-_-)");
+			println("IDLE (-_-)");
 			return Direction.STAY;
 		}
 		catch(Exception e)
@@ -101,7 +101,7 @@ public class GusBot1 implements Bot {
 	private Direction shortcut(String title, Direction d)
 	{
 		resetPath();
-		System.out.println(title+" shortcut to "+d.name+" (life="+me.life+")");
+		println(title+" shortcut to "+d.name+" (life="+me.life+")");
 		return d;
 	}
 	
@@ -142,7 +142,7 @@ public class GusBot1 implements Bot {
 	
 	private void startBeerStrategy() throws Exception
 	{
-		System.out.println("Start beer strategy");
+		println("Start beer strategy");
 		int[] end = searchNearestBeer();
 		if(end==null) return;
 		
@@ -154,7 +154,7 @@ public class GusBot1 implements Bot {
 	
 	private void startMineStrategy() throws Exception
 	{
-		System.out.println("Start mine strategy");
+		println("Start mine strategy");
 		int[] end = searchNearestMine();
 		if(end==null) return;
 		
@@ -180,9 +180,9 @@ public class GusBot1 implements Bot {
 		pathLength = path==null?-1:path.length;
 		index = 0;
 		
-		System.out.println("path 1: "+pathToString1());
-		System.out.println("path 2: "+pathToString2());
-		System.out.println();
+		println("path 1: "+pathToString1());
+		println("path 2: "+pathToString2());
+		println();
 	}
 	
 	
@@ -219,10 +219,10 @@ public class GusBot1 implements Bot {
 		
 		Direction d = direction(p0,p1);
 		
-		System.out.print("index: "+index+" ");
-		System.out.print("p0: "+toString(p0)+" ");
-		System.out.print("p1: "+toString(p1)+" ");
-		System.out.println("walking to direction: "+d.name);
+		print("index: "+index+" ");
+		print("p0: "+toString(p0)+" ");
+		print("p1: "+toString(p1)+" ");
+		println("walking to direction: "+d.name);
 		
 		if(index==path.length-2) resetPath();
 		else index++;
@@ -331,30 +331,30 @@ public class GusBot1 implements Bot {
 	
 	private Board.Tile westTile()
 	{
-		int x = me_[0]-1;
-		int y = me_[1];
-		return x>=0?board.tiles[x][y]:null;
-	}
-	
-	private Board.Tile eastTile()
-	{
-		int x = me_[0]+1;
-		int y = me_[1];
-		return x<boardX?board.tiles[x][y]:null;
-	}
-	
-	private Board.Tile northTile()
-	{
 		int x = me_[0];
 		int y = me_[1]-1;
 		return y>=0?board.tiles[x][y]:null;
 	}
 	
-	private Board.Tile southTile()
+	private Board.Tile eastTile()
 	{
 		int x = me_[0];
 		int y = me_[1]+1;
 		return y<boardY?board.tiles[x][y]:null;
+	}
+	
+	private Board.Tile northTile()
+	{
+		int x = me_[0]-1;
+		int y = me_[1];
+		return x>=0?board.tiles[x][y]:null;
+	}
+	
+	private Board.Tile southTile()
+	{
+		int x = me_[0]+1;
+		int y = me_[1];
+		return x<boardX?board.tiles[x][y]:null;
 	}
 	
 	
@@ -490,4 +490,23 @@ public class GusBot1 implements Bot {
 		for(int[] p : path) b.append(toString(p));
 		return b.toString();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	private void print(String m)
+	{System.out.print(m);}
+	
+	private void println(String m)
+	{System.out.println(m);}
+	
+	private void println()
+	{println("");}
 }
