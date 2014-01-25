@@ -23,7 +23,7 @@ public class GusBot1 implements Bot {
 	public static final int VERY_THIRSTY_LEVEL = 30;
 	
 	
-	public static final int ALGO = 1;
+	public static final int ALGO = 2;
 	
 	
 
@@ -50,8 +50,9 @@ public class GusBot1 implements Bot {
 		try
 		{
 			initData(state);
-			println("turn: "+turn+"/"+totalTurn+" life: "+me.life);
 			println("------------------------");
+			println("turn: "+turn+"/"+totalTurn+" life: "+me.life);
+			println();
 			
 			
 			if(canFight())
@@ -113,8 +114,8 @@ public class GusBot1 implements Bot {
 	
 	private void initData(State state)
 	{
-		turn = state.game.turn;
-		totalTurn = state.game.maxTurns;
+		turn = state.game.turn/4;
+		totalTurn = state.game.maxTurns/4;
 		board = state.game.board;
 		boardX = board.tiles.length;
 		boardY = board.tiles[0].length;
@@ -142,10 +143,10 @@ public class GusBot1 implements Bot {
 	
 	private void startBeerStrategy() throws Exception
 	{
-		println("Start beer strategy");
 		int[] end = searchNearestBeer();
 		if(end==null) return;
 		
+		println("Start beer strategy: order="+toString(me_)+"->"+toString(end));
 		initializePath(me_,end);
 	}
 	
@@ -154,10 +155,10 @@ public class GusBot1 implements Bot {
 	
 	private void startMineStrategy() throws Exception
 	{
-		println("Start mine strategy");
 		int[] end = searchNearestMine();
 		if(end==null) return;
 		
+		println("Start mine strategy: order="+toString(me_)+"->"+toString(end));
 		initializePath(me_,end);
 	}
 	
