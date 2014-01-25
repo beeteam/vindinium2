@@ -1,100 +1,123 @@
 package bee.vindinium.main;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 
-import vindinium.Direction;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+
 import vindinium.Board.Tile;
 
 public class BFS {
 
 	private State state;
-
 	private int[] start;
 	private int[] end;
-
-	static final List<Tile> freeTiles = java.util.Arrays.asList(new Tile[] {
-			Tile.AIR, Tile.FREE_MINE, Tile.TAVERN });
+	BidiMap<int[], int[]> bidiMap = new DualHashBidiMap();
+	public ArrayList<int[]> queue = new ArrayList<>();
+	public HashSet<String> traited = new HashSet<>();
+	int cpt = 0;
+	
+	List<String> freeTiles = null;
 
 	public BFS(State state, int[] start, int[] end) {
 		super();
 		this.state = state;
 		this.start = start;
 		this.end = end;
+
+		this.freeTiles = new ArrayList<>();
+		freeTiles.add("  ");
 	}
 
-	ArrayList<int[]> getDistance(State state, int[] start, int[] end) {
-		ArrayList<int[]> queue = new ArrayList<>();
-		queue.add(start);
-//		queue.addAll(getFreeVoisin(start));
+	ArrayList<int[]> getDistance(int[] start, int[] end) {
 		ArrayList<int[]> resultat = new ArrayList<>();
-		if (recursive(queue, resultat, start)) {
+		traited = new HashSet<>();
+		// queue.add(start);
+		if (recursive(resultat, start)) {
 			resultat.add(start);
 		}
+
+		BidiMap<int[], int[]> inverse = bidiMap.inverseBidiMap();
+		resultat.add(end);
+		int[] tmp = inverse.get(end);
+		while (!equals(tmp, start)) {
+			resultat.add(inverse.get(tmp));
+			tmp = inverse.get(end);
+		}
+		resultat.add(start);
+		Collections.reverse(resultat);
 		return resultat;
 	}
 
-	public boolean recursive(ArrayList<int[]> queue, ArrayList<int[]> resultat, int[] pos) {
+	public boolean recursive(ArrayList<int[]> resultat, int[] pos) {
+		System.out.println("cpt : " + cpt++);
+		this.traited.add(Utils.positionToString(pos));
 		
+//		Utils.printList("Traited : ", traited);
 		if (equals(pos, this.end)) {
 			resultat.add(pos);
-			return false;
+			Utils.printList("Résultat : ", resultat);
+			return true;
 		}
 		
 		ArrayList<int[]> v = getFreeVoisin(pos);
-//		for (int[] is : v) {
-//			if (!queue.contains(is)) {
-//				queue.add(is);
-//			}
-//		}
-		for (int[] voisin : v) {
-			
-			if (recursive(queue, resultat, voisin)) {
-				resultat.add(voisin);
-				break;
-			} else {
-				if (equals(voisin, this.end)) {
-					resultat.add(voisin);
-					return false;
-				}
+		for (int[] is : v) {
+			if (!traited.contains(is)) {
+				bidiMap.put(pos, is);
+				queue.add(is);
 			}
 		}
-		return true;
+
+		int[] p = queue.remove(0);
+		
+		System.out.println("Traitement de : " + Utils.positionToString(p));
+		
+		if (recursive(resultat, p)) {
+			resultat.add(p);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	public boolean equals (int[] p1,int[] p2 ) {
-		return p1[0]==p2[0] && p1[1]==p2[1];
+	public boolean equals(int[] p1, int[] p2) {
+		return p1[0] == p2[0] && p1[1] == p2[1];
 	}
-	
+
 	public ArrayList<int[]> getFreeVoisin(int[] pos) {
-		ArrayList<int[]> queue = new ArrayList<>();
+		ArrayList<int[]> voisin = new ArrayList<>();
 		final int last = state.game.board.size - 1;
 
 		int x = pos[0];
 		int y = pos[1];
 
-		if (y > 0 && freeTiles.contains(state.game.board.tiles[x][y - 1])) {
-			queue.add(new int[] { x, y - 1 });
+		if (y > 0 && freeTiles.contains(state.game.board.tiles[x][y - 1].toString())) {
+			voisin.add(new int[] { x, y - 1 });
 		}
 
-		if (y < last && freeTiles.contains(state.game.board.tiles[x][y + 1])) {
-			queue.add(new int[] { x, y + 1 });
+//		System.out.println(state.game.board.tiles[x][y + 1]);
+		if (y < last && freeTiles.contains(state.game.board.tiles[x][y + 1].toString())) {
+			voisin.add(new int[] { x, y + 1 });
 		}
 
-		if (x > 0 && freeTiles.contains(state.game.board.tiles[x - 1][y])) {
-			queue.add(new int[] { x - 1, y });
+//		System.out.println(state.game.board.tiles[x - 1][y]);
+		if (x > 0 && freeTiles.contains(state.game.board.tiles[x - 1][y].toString())) {
+			voisin.add(new int[] { x - 1, y });
 		}
 
-		if (x < last && freeTiles.contains(state.game.board.tiles[x + 1][y])) {
-			queue.add(new int[] { x + 1, y });
+//		System.out.println(state.game.board.tiles[x + 1][y]);
+		if (x < last && freeTiles.contains(state.game.board.tiles[x + 1][y].toString())) {
+			voisin.add(new int[] { x + 1, y });
 		}
 
-		return queue;
+		return voisin;
 	}
 
+	
+	
 	public State getState() {
 		return state;
 	}

@@ -49,6 +49,7 @@ public final class Client {
             if ("training".equals(mode)) {
                 url = new URL(serverUrl + "/api/training");
                 initParams.put("turns", String.valueOf(numberOfTurns));
+                initParams.put("map", "m1");
             } else if ("arena".equals(mode)) {
                 url = new URL(serverUrl + "/api/arena");
                 System.out.println("Connecting and waiting for other players to join ...");
