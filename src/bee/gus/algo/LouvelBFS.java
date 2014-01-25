@@ -11,6 +11,8 @@ import bee.vindinium.main.Utils;
 
 public class LouvelBFS {
 
+	public static final boolean DEBUG = false;
+	
 	// private State state;
 	Board board;
 	private int[] start;
@@ -28,8 +30,8 @@ public class LouvelBFS {
 		this.board = board;
 		this.start = start;
 		this.end = end;
-		System.out.println("Start : " + Utils.positionToString(start));
-		System.out.println("End : " + Utils.positionToString(end));
+		debug("Start : " + Utils.positionToString(start));
+		debug("End : " + Utils.positionToString(end));
 
 		this.freeTiles = new ArrayList<>();
 		freeTiles.add("  ");
@@ -49,13 +51,13 @@ public class LouvelBFS {
 		int[] tmp = null;
 		String s = reverse.get(Utils.positionToString(end));
 		tmp = Utils.stringToPosition(s);
-		System.out.println(Utils.positionToString(tmp));
+		debug(Utils.positionToString(tmp));
 		resultat.add(tmp);
 		Utils.printList("RESULTAT : ", resultat);
 		while (!equals(tmp, start)) {
 			tmp = Utils.stringToPosition(reverse.get(Utils
 					.positionToString(tmp)));
-			System.out.println(Utils.positionToString(tmp));
+			debug(Utils.positionToString(tmp));
 			if (!equals(tmp, start)) {
 				resultat.add(tmp);
 				Utils.printList("RESULTAT : ", resultat);
@@ -77,11 +79,9 @@ public class LouvelBFS {
 	}
 
 	public boolean recursive(ArrayList<int[]> resultat, int[] pos) {
-		System.out.println("Position : " + Utils.positionToString(pos));
+		debug("Position : " + Utils.positionToString(pos));
 		if (equals(pos, this.end)) {
 			resultat.add(pos);
-			System.out
-					.println("***********************************************************");
 			return true;
 		}
 
@@ -102,7 +102,7 @@ public class LouvelBFS {
 		int[] p = null;
 		if (!queue.isEmpty()) {
 			p = queue.remove(0);
-//			System.out.println("Traitement de : " + Utils.positionToString(p));
+//			debug("Traitement de : " + Utils.positionToString(p));
 		} else {
 			return true;
 		}
@@ -151,6 +151,12 @@ public class LouvelBFS {
 		return voisin;
 	}
 
+	public void debug(String s) {
+		if (DEBUG) {
+			System.out.println(s);
+		}
+	}
+	
 	public void addMap(String key, String val) {
 		reverse.put(val, key);
 	}

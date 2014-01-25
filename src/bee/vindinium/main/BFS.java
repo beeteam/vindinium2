@@ -99,7 +99,7 @@ public class BFS {
 			return true;
 		} else {
 			return false;
-		}
+		}	
 	}
 
 	public boolean equals(int[] p1, int[] p2) {

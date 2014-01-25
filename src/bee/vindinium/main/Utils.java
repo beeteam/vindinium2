@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections4.BidiMap;
-
+import bee.gus.algo.LouvelBFS;
 
 public class Utils {
 
@@ -18,19 +17,23 @@ public class Utils {
 	}
 
 	public static void printSet(String title, HashSet<String> list) {
-		System.out.print(title);
-		for (String is : list) {
-			System.out.print(is);
+		if (LouvelBFS.DEBUG) {
+			System.out.print(title);
+			for (String is : list) {
+				System.out.print(is);
+			}
+			System.out.print("\n");
 		}
-		System.out.print("\n");
 	}
 
 	public static void printList(String title, ArrayList<int[]> list) {
-		System.out.print(title);
-		for (int[] is : list) {
-			System.out.print("[" + is[0] + "," + is[1] + "]");
+		if (LouvelBFS.DEBUG) {
+			System.out.print(title);
+			for (int[] is : list) {
+				System.out.print("[" + is[0] + "," + is[1] + "]");
+			}
+			System.out.print("\n");
 		}
-		System.out.print("\n");
 	}
 
 	public static Direction direction(int[] start, int[] next) {
@@ -70,40 +73,39 @@ public class Utils {
 	public static void printMaze(boolean[][] maze) {
 		int x = maze.length;
 		int y = maze[0].length;
-		for (int i = 0; i < x; i++) {
-			for (int j = 0; j < y; j++) {
-				String s = maze[i][j] ? " " : "#";
-				System.out.print(s);
+		if (LouvelBFS.DEBUG) {
+			for (int i = 0; i < x; i++) {
+				for (int j = 0; j < y; j++) {
+					String s = maze[i][j] ? " " : "#";
+					System.out.print(s);
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 	}
-	
-	public static void printBidi(BidiMap<int[], int[]> bidiMap) {
-		for (Iterator iterator = bidiMap.mapIterator(); iterator.hasNext();) {
-			int[] is = (int[]) iterator.next();
-			System.out.println(Utils.positionToString(is));
-		}
-	}
-	
+
 	public static void printMap(HashMap<String, List<String>> map) {
-		for (Iterator iterator = map.keySet().iterator(); iterator.hasNext();) {
-			String is = (String) iterator.next();
-			ArrayList<String> s = (ArrayList<String>) map.get(is);
-			System.out.print("key : " + is);
-			for (String string : s) {
-				System.out.print("value : " + string);
+		if (LouvelBFS.DEBUG) {
+			for (Iterator iterator = map.keySet().iterator(); iterator
+					.hasNext();) {
+				String is = (String) iterator.next();
+				ArrayList<String> s = (ArrayList<String>) map.get(is);
+				System.out.print("key : " + is);
+				for (String string : s) {
+					System.out.print("value : " + string);
+				}
 			}
 		}
 	}
-	
+
 	public static int[] stringToPosition(String pos) {
 		String x = extractForRegex(pos, "\\[(.*),", false);
 		String y = extractForRegex(pos, ",(.*)\\]", false);
-		return new int[] {Integer.valueOf(x), Integer.valueOf(y)};
+		return new int[] { Integer.valueOf(x), Integer.valueOf(y) };
 	}
-	
-	public static String extractForRegex(String text, String regex, boolean multiline) {
+
+	public static String extractForRegex(String text, String regex,
+			boolean multiline) {
 		Pattern pattern = null;
 		if (multiline) {
 			pattern = Pattern.compile(regex, Pattern.MULTILINE);
@@ -125,5 +127,5 @@ public class Utils {
 
 		return "";
 	}
-	
+
 }
