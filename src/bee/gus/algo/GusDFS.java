@@ -115,44 +115,53 @@ public class GusDFS {
     
     private int[] findNextMove()
     {
-    	int[][] v = new int[][]{{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
-    	
     	int x = path[index][0];
     	int y = path[index][1];
     	
-    	int k = 0;
-    	int k1 = -1;
-    	int dmin = maze_X+maze_Y;
+    	int[] v_min = null;
+    	int d_min = maze_X+maze_Y;
     	
-    	if(x>0 && maze[x-1][y])
+    	if(isFree(x-1,y))
     	{
-    		v[k] = new int[]{x-1,y};
-    		int d = distanceToEnd(v[k]);
-    		if(d<dmin) {k1 = k;dmin = d;}
-    		k++;
+    		int[] v = new int[]{x-1,y};
+    		int d = distanceToEnd(v);
+    		
+    		if(d<d_min) {v_min = v;d_min = d;}
     	}
-    	if(x<maze_X-1 && maze[x+1][y])
+    	if(isFree(x+1,y))
     	{
-    		v[k] = new int[]{x+1,y};
-    		int d = distanceToEnd(v[k]);
-    		if(d<dmin) {k1 = k;dmin = d;}
-    		k++;
+    		int[] v = new int[]{x+1,y};
+    		int d = distanceToEnd(v);
+    		
+    		if(d<d_min) {v_min = v;d_min = d;}
     	}
-    	if(y>0 && maze[x][y-1])
+    	if(isFree(x,y-1))
     	{
-    		v[k] = new int[]{x,y-1};
-    		int d = distanceToEnd(v[k]);
-    		if(d<dmin) {k1 = k;dmin = d;}
-    		k++;
+    		int[] v = new int[]{x,y-1};
+    		int d = distanceToEnd(v);
+    		
+    		if(d<d_min) {v_min = v;d_min = d;}
     	}
-    	if(y<maze_Y-1 && maze[x][y+1])
+    	if(isFree(x,y+1))
     	{
-    		v[k] = new int[]{x,y+1};
-    		int d = distanceToEnd(v[k]);
-    		if(d<dmin) {k1 = k;dmin = d;}
-    		k++;
+    		int[] v = new int[]{x,y+1};
+    		int d = distanceToEnd(v);
+    		
+    		if(d<d_min) {v_min = v;d_min = d;}
     	}
-    	return k1==-1?null:v[k1];
+    	return v_min;
+    }
+    
+    
+    
+    
+    
+    
+    private boolean isFree(int x, int y)
+    {
+    	if(x<0 || x>=maze_X) return false;
+    	if(y<0 || y>=maze_Y) return false;
+    	return maze[x][y];
     }
 
     

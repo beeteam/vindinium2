@@ -27,7 +27,7 @@ public final class Client {
         // Play numberOfGamesToPlay party in a row
         for (int i = 0; i < numberOfGamesToPlay; i++) {
             try {
-                withModeKeyGamesAndServer(args[0], args[1], 20, new URL(args[3]));
+                withModeKeyGamesAndServer(args[0], args[1], GusBot1.TURNS, new URL(args[3]));
             } catch (MalformedURLException e) {
                 throw new RuntimeException("Invalid server URL", e);
             } // end of catch
@@ -52,6 +52,7 @@ public final class Client {
             if ("training".equals(mode)) {
                 url = new URL(serverUrl + "/api/training");
                 initParams.put("turns", String.valueOf(numberOfTurns));
+                if(GusBot1.MAP!=null) initParams.put("map",GusBot1.MAP);
             } else if ("arena".equals(mode)) {
                 url = new URL(serverUrl + "/api/arena");
                 System.out.println("Connecting and waiting for other players to join ...");

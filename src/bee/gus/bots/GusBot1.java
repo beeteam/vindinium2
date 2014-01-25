@@ -1,8 +1,10 @@
 package bee.gus.bots;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import bee.gus.algo.GusDFS;
+import bee.gus.algo.GusDFSHolder;
+import bee.gus.algo.LouvelBFS;
 import bee.gus.client.Board;
 import bee.gus.client.Bot;
 import bee.gus.client.Direction;
@@ -12,22 +14,31 @@ import bee.gus.client.State;
 
 public class GusBot1 implements Bot {
 	
+	public static final int TURNS = 40;
+	public static final String MAP = "m1";
+	//public static final String MAP = null;
 	
+	
+	public static final int WEAK_LEVEL = 25;
+	public static final int THIRSTY_LEVEL = 70;
+	
+	public static final int ALGO = 2;
+	
+	
+
+	private int turn;
+	private int totalTurn;
 	private Board board;
+	private int boardX;
+	private int boardY;
+
 	private Hero me;
 	private int[] me_;
 	
-	
-	
-	private GusDFS dfs;
-	
-	private boolean running = false;
 	private int[][] path;
+	private int pathLength;
 	private int index;
 	
-	
-	public GusBot1()
-	{dfs = new GusDFS();}
 	
 	
 	
@@ -37,66 +48,38 @@ public class GusBot1 implements Bot {
 	{
 		try
 		{
-			board = state.game.board;
-			me = state.hero();
-			me_ =  heroToIntArray(me);
+			initData(state);
+			System.out.println("turn: "+turn+"/"+totalTurn);
 			
 			
-			
-			if(!running)
+			if(canFight())
 			{
-				boolean[][] maze = buildMaze();
-				int[] start = me_;
-				int[] end = seachMine();
-				
-				maze[start[0]][start[1]] = true;
-				maze[end[0]][end[1]] = true;
-				
-				printMaze(maze);
-				
-				dfs.register("maze",maze);
-				dfs.register("start",start);
-				dfs.register("end",end);
-				dfs.run();
-				
-				path = (int[][]) dfs.retrieve("path");
-				
-				System.out.println("running DFS");
-				System.out.println("start: "+toString(start));
-				System.out.println("end: "+toString(end));
-				System.out.println("path length: "+path.length);
-				System.out.println();
-				
-				index = 0;
-				running = true;
+				if(isMine(westTile())) return Direction.WEST;
+				if(isMine(eastTile())) return Direction.EAST;
+				if(isMine(northTile())) return Direction.NORTH;
+				if(isMine(southTile())) return Direction.SOUTH;
 			}
 			
-			
-			if(running)
+			if(isThirsty())
 			{
-				if(index==path.length-1) return Direction.STAY;
-					
-				int[] p0 = path[index];
-				int[] p1 = path[index+1];
-				
-				Direction d = direction(p0,p1);
-				
-				System.out.print("index: "+index+" ");
-				System.out.print("p0: "+toString(p0)+" ");
-				System.out.print("p1: "+toString(p1)+" ");
-				System.out.println("direction: "+d.name);
-				
-				
-				
-				index++;
-				
-				if(index==path.length)
-				{running = false;}
-				
-				return d;
+				if(isBeer(westTile())) return Direction.WEST;
+				if(isBeer(eastTile())) return Direction.EAST;
+				if(isBeer(northTile())) return Direction.NORTH;
+				if(isBeer(southTile())) return Direction.SOUTH;
 			}
+			
+			if(isHero(westTile())) return Direction.WEST;
+			if(isHero(eastTile())) return Direction.EAST;
+			if(isHero(northTile())) return Direction.NORTH;
+			if(isHero(southTile())) return Direction.SOUTH;
+			
+			
+			if(path==null) strategy();
+			if(hasPath()) return walkInsidePath();
+			
+			
+			System.out.println("IDLE (-_-)");
 			return Direction.STAY;
-			
 		}
 		catch(Exception e)
 		{
@@ -109,13 +92,105 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	
+	private void initData(State state)
+	{
+		turn = state.game.turn;
+		totalTurn = state.game.maxTurns;
+		board = state.game.board;
+		boardX = board.tiles.length;
+		boardY = board.tiles[0].length;
+		
+		me = state.hero();
+		me_ =  heroToIntArray(me);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	private void strategy() throws Exception
+	{
+		int[] end = searchNearestMine();
+		if(end==null) return;
+		
+		path = initializePath(me_,end);
+		pathLength = path==null?-1:path.length;
+		index = 0;
+		
+		printFullPath();
+		
+		System.out.println("running path: "+pathToString());
+		System.out.println();
+	}
+	
+	
+	
+	
+	
+	
+	
+	private int[][] initializePath(int[] start, int[] end) throws Exception
+	{
+		if(ALGO==1) return initializePath1(start,end);
+		if(ALGO==2) return initializePath2(start,end);
+		throw new Exception("Unknown algo: "+ALGO);
+	}
+	
+	
+	
+	private int[][] initializePath1(int[] start, int[] end) throws Exception
+	{return new GusDFSHolder(board,start,end).getDistanceArray();}
+	
+	
+	private int[][] initializePath2(int[] start, int[] end) throws Exception
+	{return new LouvelBFS(board,start,end).getDistanceArray();}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private Direction walkInsidePath() throws Exception
+	{
+		if(index==path.length-1)
+			throw new Exception("Reaching end of path !!!!");
+		
+		int[] p0 = path[index];
+		int[] p1 = path[index+1];
+		
+		Direction d = direction(p0,p1);
+		
+		System.out.print("index: "+index+" ");
+		System.out.print("p0: "+toString(p0)+" ");
+		System.out.print("p1: "+toString(p1)+" ");
+		System.out.println("direction: "+d.name);
+		
+		if(index==path.length-2) resetPath();
+		else index++;
+		
+		return d;
+	}
+	
+	
+	
+	
+	
+	
+
 	private Hero anotherHero(State state)
 	{
 		List<Hero> l = state.game.heroes;
 		for(Hero r:l) if(r!=state.hero()) return r;
 		return null;
 	}
-	
 	
 	
 	
@@ -132,7 +207,7 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private int[] seachMine() throws Exception
+	private int[] seachOneMine() throws Exception
 	{
 		int x = board.tiles.length;
 		int y = board.tiles[0].length;
@@ -147,46 +222,124 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private int[] searchNearestMine() throws Exception
+	
+	private int[] searchNearestMine()
 	{
+		double d_min = Double.MAX_VALUE;
+		int[] bestPosition = null;
 		
 		int X = board.tiles.length;
 		int Y = board.tiles[0].length;
 		
 		for(int i=0;i<X;i++) for(int j=0;j<Y;j++)
-			if(isMine(board.tiles[i][j])) return new int[]{i,j};
-		
-		throw new Exception("Mine not found");
+			if(isMine(board.tiles[i][j]))
+		{
+			int[] minePosition = new int[]{i,j};
+			double d = distance(minePosition,me_);
+			if(d<d_min)
+			{
+				d_min = d;
+				bestPosition = minePosition;
+			}
+		}
+		return bestPosition;
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	private int[] searchNearestBeer()
+	{
+		double d_min = Double.MAX_VALUE;
+		int[] bestPosition = null;
+		
+		int X = board.tiles.length;
+		int Y = board.tiles[0].length;
+		
+		for(int i=0;i<X;i++) for(int j=0;j<Y;j++)
+			if(isBeer(board.tiles[i][j]))
+		{
+			int[] beerPosition = new int[]{i,j};
+			double d = distance(beerPosition,me_);
+			if(d<d_min)
+			{
+				d_min = d;
+				bestPosition = beerPosition;
+			}
+		}
+		return bestPosition;
+	}
 
 	
 	
 	
 	
-	
-	private boolean[][] buildMaze()
+	private Board.Tile westTile()
 	{
-		int x = board.tiles.length;
-		int y = board.tiles[0].length;
-		
-		boolean[][] maze = new boolean[x][y];
-		for(int i=0;i<x;i++) for(int j=0;j<y;j++)
-		maze[i][j] = !isBlock(board.tiles[i][j]);
-		
-		return maze;
+		int x = me_[0]-1;
+		int y = me_[1];
+		return x>=0?board.tiles[x][y]:null;
+	}
+	
+	private Board.Tile eastTile()
+	{
+		int x = me_[0]+1;
+		int y = me_[1];
+		return x<boardX?board.tiles[x][y]:null;
+	}
+	
+	private Board.Tile northTile()
+	{
+		int x = me_[0];
+		int y = me_[1]-1;
+		return y>=0?board.tiles[x][y]:null;
+	}
+	
+	private Board.Tile southTile()
+	{
+		int x = me_[0];
+		int y = me_[1]+1;
+		return y<boardY?board.tiles[x][y]:null;
 	}
 	
 	
 	
 	
-	private boolean isBlock(Board.Tile tile)
-	{return !tile.equals(Board.Tile.AIR);}
+	
+	
+	
+	
+	
+	
 	
 	
 	
 	private boolean isMine(Board.Tile tile)
-	{return tile.equals(Board.Tile.FREE_MINE);}
+	{
+		if(tile==null) return false;
+		return tile.equals(Board.Tile.FREE_MINE);
+	}
+	
+	
+	
+	private boolean isBeer(Board.Tile tile)
+	{
+		if(tile==null) return false;
+		return tile.equals(Board.Tile.TAVERN);
+	}
+	
+	
+	
+	private boolean isHero(Board.Tile tile)
+	{
+		if(tile==null) return false;
+		return tile.toString().startsWith("@");
+	}
+	
 	
 	
 	
@@ -203,8 +356,45 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
 	private String toString(int[] p)
-	{return "["+p[0]+" "+p[1]+"]";}
+	{
+		if(p==null) return "null";
+		return "["+p[0]+" "+p[1]+"]";
+	}
+	
+	
+	private String pathToString()
+	{
+		if(path==null) return "no path";
+		return toString(path[0])+" -> "+toString(path[pathLength-1])+" ("+pathLength+")";
+	}
+	
+	
+	private void resetPath()
+	{
+		path=null;
+		pathLength=-1;
+	}
+	
+	private boolean hasPath()
+	{return pathLength>0;}
+	
+	
+	
+	
+	private boolean canFight()
+	{return me.life<=WEAK_LEVEL;}
+	
+	
+	private boolean isThirsty()
+	{return me.life<=THIRSTY_LEVEL;}
 	
 	
 	
@@ -220,18 +410,12 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private void printMaze(boolean[][] maze)
+	public void printFullPath()
 	{
-		int x = maze.length;
-		int y = maze[0].length;
-		for(int i=0;i<x;i++) 
-		{
-			for(int j=0;j<y;j++)
-			{
-				String s = maze[i][j]?" ":"#";
-				System.out.print(s);
-			}
-			System.out.println();
-		}
+		if(path==null) {System.out.println("null");return;}
+		for(int[] is : path)
+		System.out.print("[" + is[0] + " " + is[1] + "]");
+		System.out.println();
 	}
+	
 }
