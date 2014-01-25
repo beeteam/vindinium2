@@ -2,7 +2,12 @@ package bee.vindinium.main;
 
 import java.util.ArrayList;
 
+import bee.gus.client.Board;
+import bee.gus.client.State;
+
 public class Utils {
+	
+	
 	
 	static String positionToString(int[] p) {
 		return "[" + p[0] + "," + p[1] + "]";
@@ -24,4 +29,39 @@ public class Utils {
 		if(next[1] == start[1]-1) return Direction.WEST;
 		return null;
 	}
+	
+	private boolean isBlock(Board.Tile tile)
+	{return !tile.equals(Board.Tile.AIR);}
+	
+	//construire le lab
+	private boolean[][] buildMaze(State state)
+	{
+		Board board;
+		
+		board = state.game.board;
+		
+		int x = board.tiles.length;
+		int y = board.tiles[0].length;
+		
+		boolean[][] maze = new boolean[x][y];
+		for(int i=0;i<x;i++) for(int j=0;j<y;j++)
+		maze[i][j] = !isBlock(board.tiles[i][j]);
+		
+		return maze;
+	}
+	//imprimer le laby
+		private void printMaze(boolean[][] maze)
+		{
+			int x = maze.length;
+			int y = maze[0].length;
+			for(int i=0;i<x;i++) 
+			{
+				for(int j=0;j<y;j++)
+				{
+					String s = maze[i][j]?" ":"#";
+					System.out.print(s);
+				}
+				System.out.println();
+			}
+		}
 }
