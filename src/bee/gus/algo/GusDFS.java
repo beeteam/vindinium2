@@ -1,10 +1,10 @@
-package bee.test;
+package bee.gus.algo;
 
 
 
 
 
-public class DepthFirstSearch {
+public class GusDFS {
 
 
     public String getName()				{return "gus.math.maze.solve.algo.depthfirstsearch";}
