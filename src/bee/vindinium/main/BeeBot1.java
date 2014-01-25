@@ -19,9 +19,14 @@ public class BeeBot1 implements Bot {
 		System.out.println(Utils.positionToString(start));
 		System.out.println(Utils.positionToString(end));
 
-		BFS bfs = new BFS(state, start, end);
-		ArrayList<int[]> chemin = bfs.getDistance(start, end);
+//		Utils.printMaze(Utils.buildMaze(state));
+		
+//		BFS bfs = new BFS(state, start, new int[] {0,2});
+//		ArrayList<int[]> chemin = bfs.getDistance(start, new int[] {0,2});
+		BFS bfs = new BFS(state.game.board, start, end);
+		ArrayList<int[]> chemin = bfs.getDistance();
 
+		Utils.printList("chemin : ", chemin);
 		if (chemin.size() <= 1)
 			return Direction.STAY;
 
@@ -32,6 +37,8 @@ public class BeeBot1 implements Bot {
 		System.out.print("end: " + end + " ");
 		System.out.println("next: " + next);
 
+		
+		
 		return Utils.direction(start, next);
 
 	}
