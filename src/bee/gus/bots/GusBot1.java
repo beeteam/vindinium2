@@ -13,13 +13,21 @@ import bee.gus.client.State;
 public class GusBot1 implements Bot {
 	
 	
+	private Board board;
+	private Hero me;
+	private int[] me_;
+	
+	
+	
 	private GusDFS dfs;
 	
+	private boolean running = false;
+	private int[][] path;
+	private int index;
 	
 	
-	public GusBot1() {
-		dfs = new GusDFS();
-	}
+	public GusBot1()
+	{dfs = new GusDFS();}
 	
 	
 	
@@ -29,37 +37,65 @@ public class GusBot1 implements Bot {
 	{
 		try
 		{
-			Board board = state.game.board;
-			boolean[][] maze = buildMaze(board);
-			
-			if(state.game.turn==0)
-			printMaze(maze);
-			
-			Hero me = state.hero();
-			Hero ennemi = anotherHero(state);
-			
-			int[] start =  heroToIntArray(me);
-			int[] end = heroToIntArray(ennemi);
-			
-			dfs.register("maze",maze);
-			dfs.register("start",start);
-			dfs.register("end",end);
-			dfs.run();
+			board = state.game.board;
+			me = state.hero();
+			me_ =  heroToIntArray(me);
 			
 			
-			int[][] path = (int[][]) dfs.retrieve("path");
 			
-			if(path.length==1) return Direction.STAY;
+			if(!running)
+			{
+				boolean[][] maze = buildMaze();
+				int[] start = me_;
+				int[] end = seachMine();
+				
+				maze[start[0]][start[1]] = true;
+				maze[end[0]][end[1]] = true;
+				
+				printMaze(maze);
+				
+				dfs.register("maze",maze);
+				dfs.register("start",start);
+				dfs.register("end",end);
+				dfs.run();
+				
+				path = (int[][]) dfs.retrieve("path");
+				
+				System.out.println("running DFS");
+				System.out.println("start: "+toString(start));
+				System.out.println("end: "+toString(end));
+				System.out.println("path length: "+path.length);
+				System.out.println();
+				
+				index = 0;
+				running = true;
+			}
 			
-			int[] next = path[1];
 			
-			
-			System.out.print("ennemi: "+ennemi.id+" ");
-			System.out.print("start: "+toString(start)+" ");
-			System.out.print("end: "+toString(end)+" ");
-			System.out.println("next: "+toString(next));
-			
-			return direction(start,next);
+			if(running)
+			{
+				if(index==path.length-1) return Direction.STAY;
+					
+				int[] p0 = path[index];
+				int[] p1 = path[index+1];
+				
+				Direction d = direction(p0,p1);
+				
+				System.out.print("index: "+index+" ");
+				System.out.print("p0: "+toString(p0)+" ");
+				System.out.print("p1: "+toString(p1)+" ");
+				System.out.println("direction: "+d.name);
+				
+				
+				
+				index++;
+				
+				if(index==path.length)
+				{running = false;}
+				
+				return d;
+			}
+			return Direction.STAY;
 			
 		}
 		catch(Exception e)
@@ -90,20 +126,53 @@ public class GusBot1 implements Bot {
 		return new int[]{x,y};
 	}
 	
+	
+	
+	
+	
+	
+	
+	private int[] seachMine() throws Exception
+	{
+		int x = board.tiles.length;
+		int y = board.tiles[0].length;
+		
+		for(int i=0;i<x;i++) for(int j=0;j<y;j++)
+			if(isMine(board.tiles[i][j])) return new int[]{i,j};
+		
+		throw new Exception("Mine not found");
+	}
+	
+	
+	
+	
+	
+	private int[] searchNearestMine() throws Exception
+	{
+		
+		int X = board.tiles.length;
+		int Y = board.tiles[0].length;
+		
+		for(int i=0;i<X;i++) for(int j=0;j<Y;j++)
+			if(isMine(board.tiles[i][j])) return new int[]{i,j};
+		
+		throw new Exception("Mine not found");
+	}
+	
 
 	
 	
 	
 	
 	
-	private boolean[][] buildMaze(Board board)
+	private boolean[][] buildMaze()
 	{
 		int x = board.tiles.length;
 		int y = board.tiles[0].length;
 		
 		boolean[][] maze = new boolean[x][y];
 		for(int i=0;i<x;i++) for(int j=0;j<y;j++)
-		maze[i][j] = !isWall(board.tiles[i][j]);
+		maze[i][j] = !isBlock(board.tiles[i][j]);
 		
 		return maze;
 	}
@@ -111,9 +180,13 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private boolean isWall(Board.Tile tile)
-	{return tile.equals(Board.Tile.WALL);}
+	private boolean isBlock(Board.Tile tile)
+	{return !tile.equals(Board.Tile.AIR);}
 	
+	
+	
+	private boolean isMine(Board.Tile tile)
+	{return tile.equals(Board.Tile.FREE_MINE);}
 	
 	
 	
@@ -130,7 +203,19 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private String toString(int[] p) {return "["+p[0]+" "+p[1]+"]";}
+	private String toString(int[] p)
+	{return "["+p[0]+" "+p[1]+"]";}
+	
+	
+	
+	
+	
+	private double distance(int[] p1, int[] p2)
+	{
+		double dx = (double) p1[0]-p2[0];
+		double dy = (double) p1[1]-p2[1];
+		return Math.sqrt(dx*dx + dy*dy);
+	}
 	
 	
 	
@@ -143,8 +228,10 @@ public class GusBot1 implements Bot {
 		{
 			for(int j=0;j<y;j++)
 			{
-				
+				String s = maze[i][j]?" ":"#";
+				System.out.print(s);
 			}
+			System.out.println();
 		}
 	}
 }
