@@ -21,6 +21,7 @@ public class GusBot1 implements Bot {
 	public static final int WEAK_LEVEL = 25;
 	public static final int ABIT_THIRSTY_LEVEL = 70;
 	public static final int VERY_THIRSTY_LEVEL = 30;
+	public static final int AGGRESSIVE_LEVEL = 10;
 	
 	
 	public static final int ALGO = 2;
@@ -55,7 +56,7 @@ public class GusBot1 implements Bot {
 			println();
 			
 			
-			if(canFight())
+			if(canFightMine())
 			{
 				if(isMine(westTile())) return shortcut("W->mine!",Direction.WEST);
 				if(isMine(eastTile())) return shortcut("E->mine!",Direction.EAST);
@@ -101,7 +102,7 @@ public class GusBot1 implements Bot {
 	
 	private Direction shortcut(String title, Direction d)
 	{
-		resetPath();
+		//resetPath();
 		println(title+" shortcut to "+d.name+" (life="+me.life+")");
 		return d;
 	}
@@ -330,6 +331,13 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
 	private Board.Tile westTile()
 	{
 		int x = me_[0];
@@ -423,8 +431,8 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private boolean canFight()
-	{return me.life>WEAK_LEVEL;}
+	private boolean canFightMine()
+	{return me.life>=WEAK_LEVEL;}
 	
 	
 	private boolean isABitThirsty()
@@ -436,7 +444,7 @@ public class GusBot1 implements Bot {
 	
 	
 	private boolean isAgressive()
-	{return me.life<=ABIT_THIRSTY_LEVEL;}
+	{return me.life>=AGGRESSIVE_LEVEL;}
 	
 	
 	
