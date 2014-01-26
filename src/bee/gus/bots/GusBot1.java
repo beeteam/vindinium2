@@ -19,10 +19,13 @@ public class GusBot1 implements Bot {
 	public static final String MAP = "m2";
 	//public static final String MAP = null;
 	
-	public static final boolean PRINT1 = false;
-	public static final boolean PRINT2 = true;
+	public static final boolean PRINT_MODE = false;
+	
+	public static final boolean PRINT1 = PRINT_MODE;
+	public static final boolean PRINT2 = !PRINT_MODE;
 	
 	public static final boolean USE_SHORTCUTS = true;
+	public static final boolean USE_BACKGROUND = false;
 	
 	
 	public static final int WEAK_LEVEL = 35;
@@ -57,8 +60,13 @@ public class GusBot1 implements Bot {
 	
 	public Direction nextMove(State state)
 	{
+		int gold = state.hero().gold;
+		int life = state.hero().life;
+		int turn = state.game.turn/4;
+		
 		Direction d = nextMove_(state);
-		println2((state.game.turn/4)+": DIRECTION FINAL = "+d);
+		println2(turn+": DIRECTION FINAL = "+d+" gold="+gold+" life="+life);
+		
 		return d;
 	}
 	
@@ -142,11 +150,13 @@ public class GusBot1 implements Bot {
 	private void initData(State state)
 	{
 		game = state.game;
-		turn = state.game.turn/4;
-		totalTurn = state.game.maxTurns/4;
 		board = state.game.board;
+		
 		boardX = board.tiles.length;
 		boardY = board.tiles[0].length;
+		
+		turn = state.game.turn/4;
+		totalTurn = state.game.maxTurns/4;
 		
 		me = state.hero();
 		me_ =  heroToIntArray(me);
@@ -154,7 +164,7 @@ public class GusBot1 implements Bot {
 		if(bg==null)
 		{
 			bg = new Background(board);
-			new Thread(bg).start();
+			if(USE_BACKGROUND) new Thread(bg).start();
 		}
 	}
 	
@@ -342,13 +352,13 @@ public class GusBot1 implements Bot {
 		{
 			int[] minePosition = new int[]{i,j};
 			double d = distance(minePosition,me_);
-			println1("distance to mine "+toString(minePosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
 				bestPosition = minePosition;
 			}
 		}
+		println1("best distance to mine "+toString(bestPosition)+" = "+d_min);
 		return bestPosition;
 	}
 	
@@ -372,13 +382,13 @@ public class GusBot1 implements Bot {
 		{
 			int[] beerPosition = new int[]{i,j};
 			double d = distance(beerPosition,me_);
-			println1("distance to beer "+toString(beerPosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
 				bestPosition = beerPosition;
 			}
 		}
+		println1("best distance to beer "+toString(bestPosition)+" = "+d_min);
 		return bestPosition;
 	}
 
