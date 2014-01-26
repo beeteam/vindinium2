@@ -17,6 +17,9 @@ public class GusBot1 implements Bot {
 	public static final String MAP = "m1";
 	//public static final String MAP = null;
 	
+	public static final boolean PRINT1 = true;
+	public static final boolean PRINT2 = false;
+	
 	
 	public static final int WEAK_LEVEL = 25;
 	public static final int ABIT_THIRSTY_LEVEL = 70;
@@ -43,17 +46,26 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	public Direction nextMove(State state)
+	{
+		Direction d = nextMove_(state);
+		println2((state.game.turn/4)+": DIRECTION FINAL = "+d);
+		return d;
+	}
+	
+	
+	
 	
 	
 
-	public Direction nextMove(State state)
+	private Direction nextMove_(State state)
 	{
 		try
 		{
 			initData(state);
-			println("------------------------");
-			println("turn: "+turn+"/"+totalTurn+" life: "+me.life);
-			println();
+			println1("------------------------");
+			println1("turn: "+turn+"/"+totalTurn+" life: "+me.life+" me: "+toString(me_));
+			println1();
 			
 			
 			if(canFightMine())
@@ -85,7 +97,7 @@ public class GusBot1 implements Bot {
 			if(hasPath()) return walkInsidePath();
 			
 			
-			println("IDLE (-_-)");
+			println1("IDLE (-_-)");
 			return Direction.STAY;
 		}
 		catch(Exception e)
@@ -102,8 +114,10 @@ public class GusBot1 implements Bot {
 	
 	private Direction shortcut(String title, Direction d)
 	{
-		//resetPath();
-		println(title+" shortcut to "+d.name+" (life="+me.life+")");
+		int[] target = targetPosition(d);
+		if(equals(target,pathEnd())) resetPath();
+		
+		println1(title+" shortcut to "+d.name+" (life="+me.life+")");
 		return d;
 	}
 	
@@ -115,8 +129,8 @@ public class GusBot1 implements Bot {
 	
 	private void initData(State state)
 	{
-		turn = state.game.turn;
-		totalTurn = state.game.maxTurns;
+		turn = state.game.turn/4;
+		totalTurn = state.game.maxTurns/4;
 		board = state.game.board;
 		boardX = board.tiles.length;
 		boardY = board.tiles[0].length;
@@ -147,7 +161,7 @@ public class GusBot1 implements Bot {
 		int[] end = searchNearestBeer();
 		if(end==null) return;
 		
-		println("Start beer strategy: order="+toString(me_)+"->"+toString(end));
+		println1("Start beer strategy: order="+toString(me_)+"->"+toString(end));
 		initializePath(me_,end);
 	}
 	
@@ -159,7 +173,7 @@ public class GusBot1 implements Bot {
 		int[] end = searchNearestMine();
 		if(end==null) return;
 		
-		println("Start mine strategy: order="+toString(me_)+"->"+toString(end));
+		println1("Start mine strategy: order="+toString(me_)+"->"+toString(end));
 		initializePath(me_,end);
 	}
 	
@@ -182,9 +196,9 @@ public class GusBot1 implements Bot {
 		pathLength = path==null?-1:path.length;
 		index = 0;
 		
-		println("path 1: "+pathToString1());
-		println("path 2: "+pathToString2());
-		println();
+		println1("path 1: "+pathToString1());
+		println1("path 2: "+pathToString2());
+		println1();
 	}
 	
 	
@@ -219,20 +233,27 @@ public class GusBot1 implements Bot {
 		int[] p0 = path[index];
 		int[] p1 = path[index+1];
 		
+		if(!equals(me_,p0))
+		{
+			println1("Dephasage entre position réelle et chemin prevu: reset");
+			resetPath();
+			return Direction.STAY;
+		}
+		
 		Direction d = direction(p0,p1);
 		
 		
 		if(isHero(tileAt(p1)))
 		{
-			println("walking interrupted by hero: reseting path");
+			println1("walking interrupted by hero: reseting path");
 			resetPath();
 			return d;
 		}
 		
-		print("index: "+index+" ");
-		print("p0: "+toString(p0)+" ");
-		print("p1: "+toString(p1)+" ");
-		println("walking to direction: "+d.name);
+		print1("index: "+index+" ");
+		print1("p0: "+toString(p0)+" ");
+		print1("p1: "+toString(p1)+" ");
+		println1("walking to direction: "+d.name);
 		
 		if(index==path.length-2) resetPath();
 		else index++;
@@ -315,7 +336,7 @@ public class GusBot1 implements Bot {
 		{
 			int[] beerPosition = new int[]{i,j};
 			double d = distance(beerPosition,me_);
-			println("distance to "+toString(beerPosition)+" = "+d);
+			println1("distance to "+toString(beerPosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
@@ -364,6 +385,20 @@ public class GusBot1 implements Bot {
 		return x<boardX?board.tiles[x][y]:null;
 	}
 	
+
+	
+	
+	
+	
+	
+	private int[] targetPosition(Direction d)
+	{
+		if(d==Direction.WEST) return new int[]{me_[0],me_[1]+1};
+		if(d==Direction.EAST) return new int[]{me_[0],me_[1]-1};
+		if(d==Direction.NORTH) return new int[]{me_[0]-1,me_[1]};
+		if(d==Direction.SOUTH) return new int[]{me_[0]+1,me_[1]};
+		return null;
+	}
 	
 	
 	
@@ -480,6 +515,9 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	private boolean equals(int[] p1, int[] p2)
+	{return p1!=null && p2!=null && p1[0]==p2[0] && p1[1]==p2[1];}
+	
 	
 	
 	
@@ -494,6 +532,10 @@ public class GusBot1 implements Bot {
 	
 	private boolean hasPath()
 	{return pathLength>0;}
+	
+	
+	private int[] pathEnd()
+	{return path==null || path.length==0?null:path[path.length-1];}
 
 	
 	
@@ -522,12 +564,19 @@ public class GusBot1 implements Bot {
 	
 
 	
-	private void print(String m)
-	{System.out.print(m);}
+	private void print1(String m)
+	{if(PRINT1) System.out.print(m);}
 	
-	private void println(String m)
-	{System.out.println(m);}
+	private void println1(String m)
+	{if(PRINT1) System.out.println(m);}
 	
-	private void println()
-	{println("");}
+	private void println1()
+	{if(PRINT1) println1("");}
+	
+	
+	
+	
+	private void println2(String m)
+	{if(PRINT2) System.out.println(m);}
+	
 }
