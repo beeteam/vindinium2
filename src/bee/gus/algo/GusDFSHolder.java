@@ -77,7 +77,7 @@ public class GusDFSHolder {
 	private boolean isBlock(Board.Tile tile)
 	{
 		if(tile==null) return true;
-		if(!tile.toString().startsWith("@")) return true;
-		return !tile.equals(Board.Tile.AIR);
+		String s = tile.toString();
+		return !s.startsWith("@") && !s.equals("  ");
 	}
 }

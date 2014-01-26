@@ -69,7 +69,7 @@ public class GusBot1 implements Bot {
 		{
 			initData(state);
 			println1("------------------------");
-			println1("turn: "+turn+"/"+totalTurn+" life: "+me.life+" me: "+toString(me_));
+			println1("turn: "+turn+"/"+totalTurn+" [life: "+me.life+" gold: "+me.gold+" position: "+toString(me_)+"]");
 			println1();
 
 
