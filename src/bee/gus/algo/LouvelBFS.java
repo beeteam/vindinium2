@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import bee.gus.client.Board;
-import bee.vindinium.main.Utils;
+import bee.gus.client.Utils;
 
 public class LouvelBFS {
 

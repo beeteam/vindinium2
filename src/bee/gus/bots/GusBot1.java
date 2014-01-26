@@ -16,7 +16,7 @@ import bee.gus.client.State;
 public class GusBot1 implements Bot {
 	
 	public static final int TURNS = 50;
-	public static final String MAP = "m6";
+	public static final String MAP = "m2";
 	//public static final String MAP = null;
 	
 	public static final boolean PRINT1 = false;

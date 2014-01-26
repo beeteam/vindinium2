@@ -1,4 +1,4 @@
-package bee.vindinium.main;
+package bee.gus.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
