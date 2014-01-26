@@ -55,6 +55,14 @@ public class GusBot1 implements Bot {
 	private Background bg;
 	
 	
+	private int previousGold = 0;
+	private int previousGoldOther = 0;
+	
+	private int income = -1;
+	private int incomeOther = -1;
+	
+	
+	
 	
 	
 	
@@ -65,7 +73,7 @@ public class GusBot1 implements Bot {
 		int turn = state.game.turn/4;
 		
 		Direction d = nextMove_(state);
-		println2(turn+": DIRECTION FINAL = "+d+" gold="+gold+" life="+life);
+		println2(turn+": DIRECTION FINAL = "+d+" life="+life+" gold="+gold+" (best="+bestGold()+")");
 		
 		return d;
 	}
@@ -158,9 +166,17 @@ public class GusBot1 implements Bot {
 		turn = state.game.turn/4;
 		totalTurn = state.game.maxTurns/4;
 		
+		
 		me = state.hero();
 		me_ =  heroToIntArray(me);
 		
+		income = me.gold - previousGold;
+		previousGold = me.gold;
+		
+		//incomeOther = getGoldOther();
+		
+		
+				
 		if(bg==null)
 		{
 			bg = new Background(board);
@@ -287,6 +303,15 @@ public class GusBot1 implements Bot {
 		
 		Direction d = direction(p0,p1);
 		
+		if(isMine(tileAt(p1)))
+		{
+			if(!canFightMine())
+			{
+				println1("Prevent from fighting mine");
+				resetPath();
+				return Direction.STAY;
+			}
+		}
 		
 		if(isHero(tileAt(p1)))
 		{
@@ -309,15 +334,6 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	
-	
-
-	private Hero anotherHero(State state)
-	{
-		List<Hero> l = state.game.heroes;
-		for(Hero r:l) if(r!=state.hero()) return r;
-		return null;
-	}
 	
 	
 	
@@ -436,17 +452,13 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	
-	private int[] targetPosition(Direction d)
+	private int bestGold()
 	{
-		if(d==Direction.WEST) return new int[]{me_[0],me_[1]+1};
-		if(d==Direction.EAST) return new int[]{me_[0],me_[1]-1};
-		if(d==Direction.NORTH) return new int[]{me_[0]-1,me_[1]};
-		if(d==Direction.SOUTH) return new int[]{me_[0]+1,me_[1]};
-		return null;
+		int max = 0;
+		for(Hero r:game.heroes)
+			if(r.gold>max) max = r.gold;
+		return max;
 	}
-	
-	
 	
 	
 	
@@ -637,8 +649,6 @@ public class GusBot1 implements Bot {
 		for(int[] p : path) b.append(toString(p));
 		return b.toString();
 	}
-	
-	
 	
 	
 	
