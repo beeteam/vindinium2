@@ -58,10 +58,10 @@ public class GusBot1 implements Bot {
 			
 			if(canFightMine())
 			{
-				if(isMine(westTile())) return shortcut("W->mine!",Direction.WEST);
-				if(isMine(eastTile())) return shortcut("E->mine!",Direction.EAST);
-				if(isMine(northTile())) return shortcut("N->mine!",Direction.NORTH);
-				if(isMine(southTile())) return shortcut("S->mine!",Direction.SOUTH);
+				if(isTargetMine(westTile())) return shortcut("W->mine!",Direction.WEST);
+				if(isTargetMine(eastTile())) return shortcut("E->mine!",Direction.EAST);
+				if(isTargetMine(northTile())) return shortcut("N->mine!",Direction.NORTH);
+				if(isTargetMine(southTile())) return shortcut("S->mine!",Direction.SOUTH);
 			}
 			
 			if(isABitThirsty())
@@ -115,8 +115,8 @@ public class GusBot1 implements Bot {
 	
 	private void initData(State state)
 	{
-		turn = state.game.turn/4;
-		totalTurn = state.game.maxTurns/4;
+		turn = state.game.turn;
+		totalTurn = state.game.maxTurns;
 		board = state.game.board;
 		boardX = board.tiles.length;
 		boardY = board.tiles[0].length;
@@ -221,6 +221,14 @@ public class GusBot1 implements Bot {
 		
 		Direction d = direction(p0,p1);
 		
+		
+		if(isHero(tileAt(p1)))
+		{
+			println("walking interrupted by hero: reseting path");
+			resetPath();
+			return d;
+		}
+		
 		print("index: "+index+" ");
 		print("p0: "+toString(p0)+" ");
 		print("p1: "+toString(p1)+" ");
@@ -260,18 +268,7 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private int[] seachOneMine() throws Exception
-	{
-		int x = board.tiles.length;
-		int y = board.tiles[0].length;
-		
-		for(int i=0;i<x;i++) for(int j=0;j<y;j++)
-			if(isMine(board.tiles[i][j])) return new int[]{i,j};
-		
-		throw new Exception("Mine not found");
-	}
-	
-	
+
 	
 	
 	
@@ -285,7 +282,7 @@ public class GusBot1 implements Bot {
 		int Y = board.tiles[0].length;
 		
 		for(int i=0;i<X;i++) for(int j=0;j<Y;j++)
-			if(isMine(board.tiles[i][j]))
+			if(isTargetMine(board.tiles[i][j]))
 		{
 			int[] minePosition = new int[]{i,j};
 			double d = distance(minePosition,me_);
@@ -374,16 +371,21 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	
-	
-	
-	
-	
-	private boolean isMine(Board.Tile tile)
+	private boolean isTargetMine(Board.Tile tile)
 	{
 		if(tile==null) return false;
-		return tile.equals(Board.Tile.FREE_MINE);
+		String desc = tile.toString();
+		return desc.startsWith("$") && !desc.equals("$"+me.id);
 	}
+	
+	
+	
+	
+//	private boolean isFreeMine(Board.Tile tile)
+//	{
+//		if(tile==null) return false;
+//		return tile.equals(Board.Tile.FREE_MINE);
+//	}
 	
 	
 	
@@ -426,6 +428,15 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	private Board.Tile tileAt(int[] p)
+	{
+		int x = p[0];
+		int y = p[1];
+		if(x<0 || x>=board.tiles.length) return null;
+		if(y<0 || y>=board.tiles[0].length) return null;
+		return board.tiles[x][y];
+	}
 	
 	
 	
