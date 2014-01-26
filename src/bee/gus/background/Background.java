@@ -20,8 +20,8 @@ public class Background implements Runnable {
 	private Set mines;
 	private Set beers;
 	
-	private Map pathsToMine;
-	private Map pathsToBeer;
+	public Map pathsToMine;
+	public Map pathsToBeer;
 	
 	
 	
@@ -35,11 +35,30 @@ public class Background implements Runnable {
 		mines = new HashSet();
 		beers = new HashSet();
 		
-		findTargets();
-		
 		pathsToMine = new Hashtable();
 		pathsToBeer = new Hashtable();
 	}
+	
+
+	
+	
+	
+	public int[][] retrieveMinePath(int[] p)
+	{
+		String key = p[0]+"_"+p[1];
+		if(!pathsToMine.containsKey(key)) return null;
+		return (int[][]) pathsToMine.get(key);
+	}
+	
+	
+	
+	public int[][] retrieveBeerPath(int[] p)
+	{
+		String key = p[0]+"_"+p[1];
+		if(!pathsToBeer.containsKey(key)) return null;
+		return (int[][]) pathsToBeer.get(key);
+	}
+	
 	
 	
 	
@@ -57,6 +76,8 @@ public class Background implements Runnable {
 
 	public void run()
 	{
+		findTargets();
+		
 		for(int i=0;i<board_x;i++) for(int j=0;j<board_y;j++)
 		handleTile(i,j);
 	}
@@ -94,10 +115,10 @@ public class Background implements Runnable {
 		while(it.hasNext())
 		{
 			int[] end = toIntArray((String)it.next());
-			int[][] path = computePath2(start,end);
+			int[][] path = computePath(start,end);
 			int length = path.length;
 			
-			if(length<min_length)
+			if(length>2 && length<min_length)
 			{
 				min_length = length;
 				min_path = path;
@@ -120,10 +141,10 @@ public class Background implements Runnable {
 		while(it.hasNext())
 		{
 			int[] end = toIntArray((String)it.next());
-			int[][] path = computePath2(start,end);
+			int[][] path = computePath(start,end);
 			int length = path.length;
 			
-			if(length<min_length)
+			if(length>2 && length<min_length)
 			{
 				min_length = length;
 				min_path = path;
@@ -137,7 +158,7 @@ public class Background implements Runnable {
 	
 	
 	
-	private int[][] computePath2(int[] start, int[] end)
+	private int[][] computePath(int[] start, int[] end)
 	{return new LouvelBFS(board,start,end).getDistanceArray();}
 	
 	
@@ -204,7 +225,7 @@ public class Background implements Runnable {
 	
 	
 	private Board.Tile southTile(int x, int y)
-	{return x<board_x+1?board.tiles[x+1][y]:null;}
+	{return x<board_x-1?board.tiles[x+1][y]:null;}
 	
 	
 	
@@ -228,5 +249,15 @@ public class Background implements Runnable {
 	
 	private int i_(String s)
 	{return Integer.parseInt(s);}
+	
+	
+	
+	
+	
+	
+	public String toString()
+	{
+		return "pathsToBeer="+pathsToBeer.size()+" pathsToMine="+pathsToMine.size();
+	}
 	
 }

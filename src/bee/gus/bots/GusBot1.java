@@ -4,27 +4,29 @@ import java.util.List;
 
 import bee.gus.algo.GusDFSHolder;
 import bee.gus.algo.LouvelBFS;
+import bee.gus.background.Background;
 import bee.gus.client.Board;
 import bee.gus.client.Bot;
 import bee.gus.client.Direction;
+import bee.gus.client.Game;
 import bee.gus.client.Hero;
 import bee.gus.client.State;
 
 
 public class GusBot1 implements Bot {
 	
-	public static final int TURNS = 100;
+	public static final int TURNS = 50;
 	public static final String MAP = "m6";
 	//public static final String MAP = null;
 	
-	public static final boolean PRINT1 = true;
-	public static final boolean PRINT2 = false;
+	public static final boolean PRINT1 = false;
+	public static final boolean PRINT2 = true;
 	
 	public static final boolean USE_SHORTCUTS = true;
 	
 	
 	public static final int WEAK_LEVEL = 35;
-	public static final int ABIT_THIRSTY_LEVEL = 70;
+	public static final int ABIT_THIRSTY_LEVEL = 80;
 	public static final int VERY_THIRSTY_LEVEL = 30;
 	public static final int AGGRESSIVE_LEVEL = 10;
 	
@@ -35,6 +37,8 @@ public class GusBot1 implements Bot {
 
 	private int turn;
 	private int totalTurn;
+	
+	private Game game;
 	private Board board;
 	private int boardX;
 	private int boardY;
@@ -43,9 +47,9 @@ public class GusBot1 implements Bot {
 	private int[] me_;
 	
 	private int[][] path;
-	private int pathLength;
 	private int index;
 	
+	private Background bg;
 	
 	
 	
@@ -69,11 +73,11 @@ public class GusBot1 implements Bot {
 		{
 			initData(state);
 			println1("------------------------");
-			println1("turn: "+turn+"/"+totalTurn+" [life: "+me.life+" gold: "+me.gold+" position: "+toString(me_)+"]");
+			println1("turn:"+turn+"/"+totalTurn+" [life:"+me.life+" gold:"+me.gold+" position:"+toString(me_)+"]");
+			println1("background state: "+bg);
 			println1();
 
 			startStrategy();
-			
 			
 			if(USE_SHORTCUTS)
 			{
@@ -95,18 +99,18 @@ public class GusBot1 implements Bot {
 
 				if(isAgressive())
 				{
-					if(isHero(westTile())) return shortcut("W->hero!",Direction.WEST,false);
-					if(isHero(eastTile())) return shortcut("E->hero!",Direction.EAST,false);
-					if(isHero(northTile())) return shortcut("N->hero!",Direction.NORTH,false);
+					if(isWeakHero(westTile())) return shortcut("W->hero!",Direction.WEST,false);
+					if(isWeakHero(eastTile())) return shortcut("E->hero!",Direction.EAST,false);
+					if(isWeakHero(northTile())) return shortcut("N->hero!",Direction.NORTH,false);
 					if(isHero(southTile())) return shortcut("S->hero!",Direction.SOUTH,false);
 				}
 			}
-
+			
 
 			if(hasPath())
 				return walkInsidePath();
 			
-			
+
 			println1("IDLE (-_-)");
 			return Direction.STAY;
 		}
@@ -137,6 +141,7 @@ public class GusBot1 implements Bot {
 	
 	private void initData(State state)
 	{
+		game = state.game;
 		turn = state.game.turn/4;
 		totalTurn = state.game.maxTurns/4;
 		board = state.game.board;
@@ -145,6 +150,12 @@ public class GusBot1 implements Bot {
 		
 		me = state.hero();
 		me_ =  heroToIntArray(me);
+		
+		if(bg==null)
+		{
+			bg = new Background(board);
+			new Thread(bg).start();
+		}
 	}
 	
 	
@@ -164,47 +175,66 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	
 	private void startBeerStrategy() throws Exception
 	{
-		int[] end = searchNearestBeer();
-		if(end==null) return;
+		println1("Start beer strategy");
+		path = bg.retrieveBeerPath(me_);
+		if(path==null)
+		{
+			int[] end = searchNearestBeer();
+			if(end==null) return;
+			
+			println1("computing with order="+toString(me_)+"->"+toString(end));
+			path = computePath(me_,end);
+		}
+		else println1("predefined path: "+toString(path[0])+"->"+toString(path[path.length-1]));
 		
-		println1("Start beer strategy: order="+toString(me_)+"->"+toString(end));
-		initializePath(me_,end);
-	}
-	
-	
-	
-	
-	private void startMineStrategy() throws Exception
-	{
-		int[] end = searchNearestMine();
-		if(end==null) return;
-		
-		println1("Start mine strategy: order="+toString(me_)+"->"+toString(end));
-		initializePath(me_,end);
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	private void initializePath(int[] start, int[] end) throws Exception
-	{
-		path = computePath(start,end);
-		pathLength = path==null?-1:path.length;
 		index = 0;
 		
 		println1("path 1: "+pathToString1());
 		println1("path 2: "+pathToString2());
 		println1();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	private void startMineStrategy() throws Exception
+	{
+		println1("Start mine strategy");
+		path = bg.retrieveMinePath(me_);
+		if(path==null || !isTargetMine(tileAt(pathEnd())))
+		{
+			int[] end = searchNearestTargetMine();
+			if(end==null) return;
+			
+			println1("computing with order="+toString(me_)+"->"+toString(end));
+			path = computePath(me_,end);
+		}
+		else println1("predefined path: "+toString(path[0])+"->"+toString(path[path.length-1]));
+		
+		index = 0;
+		
+		println1("path 1: "+pathToString1());
+		println1("path 2: "+pathToString2());
+		println1();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	private int[][] computePath(int[] start, int[] end) throws Exception
@@ -299,7 +329,7 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	private int[] searchNearestMine()
+	private int[] searchNearestTargetMine()
 	{
 		double d_min = Double.MAX_VALUE;
 		int[] bestPosition = null;
@@ -440,12 +470,40 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	private boolean isWeakHero(Board.Tile tile)
+	{
+		if(!isHero(tile)) return false;
+		int heroLife = getHeroLife(tile);
+		return heroLife < me.life - 20;
+	}
+	
+	
+	
 	private boolean isHero(Board.Tile tile)
 	{
 		if(tile==null) return false;
 		return tile.toString().startsWith("@");
 	}
 	
+	
+	
+	
+	private int getHeroLife(Board.Tile tile)
+	{
+		int heroId = Integer.parseInt(tile.toString().substring(1));
+		Hero hero = getHeroFromId(heroId);
+		return hero.life;
+	}
+	
+	
+	
+	
+	private Hero getHeroFromId(int id)
+	{
+		for(Hero h:game.heroes)
+			if(h.id==id) return h;
+		return null;
+	}
 	
 	
 	
@@ -474,6 +532,7 @@ public class GusBot1 implements Bot {
 	
 	private Board.Tile tileAt(int[] p)
 	{
+		if(p==null) return null;
 		int x = p[0];
 		int y = p[1];
 		if(x<0 || x>=board.tiles.length) return null;
@@ -536,23 +595,28 @@ public class GusBot1 implements Bot {
 	{
 		println1("reseting path");
 		path=null;
-		pathLength=-1;
 	}
 	
 	private boolean hasPath()
-	{return pathLength>0;}
+	{return path!=null;}
 	
 	
 	private int[] pathEnd()
-	{return path==null || path.length==0?null:path[path.length-1];}
-
+	{return path==null?null:path[path.length-1];}
+	
+	
+	private int[] pathStart()
+	{return path==null?null:path[0];}
+	
+	
 	
 	
 	
 	private String pathToString1()
 	{
 		if(path==null) return "no path";
-		return toString(path[0])+" -> "+toString(path[pathLength-1])+" ("+pathLength+")";
+		int length = path.length;
+		return toString(path[0])+" -> "+toString(path[length-1])+" ("+length+")";
 	}
 	
 
