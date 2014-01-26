@@ -318,6 +318,7 @@ public class GusBot1 implements Bot {
 		{
 			int[] beerPosition = new int[]{i,j};
 			double d = distance(beerPosition,me_);
+			println("distance to "+toString(beerPosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
