@@ -13,14 +13,14 @@ import bee.gus.client.State;
 
 public class GusBot1 implements Bot {
 	
-	public static final int TURNS = 40;
-	public static final String MAP = "m3";
+	public static final int TURNS = 100;
+	public static final String MAP = "m6";
 	//public static final String MAP = null;
 	
 	public static final boolean PRINT1 = true;
 	public static final boolean PRINT2 = false;
 	
-	public static final boolean USE_SHORTCUTS = false;
+	public static final boolean USE_SHORTCUTS = true;
 	
 	
 	public static final int WEAK_LEVEL = 35;
@@ -72,7 +72,9 @@ public class GusBot1 implements Bot {
 			println1("turn: "+turn+"/"+totalTurn+" [life: "+me.life+" gold: "+me.gold+" position: "+toString(me_)+"]");
 			println1();
 
-
+			startStrategy();
+			
+			
 			if(USE_SHORTCUTS)
 			{
 				if(canFightMine())
@@ -100,9 +102,6 @@ public class GusBot1 implements Bot {
 				}
 			}
 
-
-			if(path==null || isVeryThirsty())
-				startStrategy();
 
 			if(hasPath())
 				return walkInsidePath();
@@ -185,9 +184,6 @@ public class GusBot1 implements Bot {
 		println1("Start mine strategy: order="+toString(me_)+"->"+toString(end));
 		initializePath(me_,end);
 	}
-	
-	
-	
 	
 	
 	
