@@ -12,7 +12,7 @@ import bee.vindinium.main.Utils;
 public class LouvelBFS {
 
 	public static final boolean DEBUG = false;
-	
+
 	// private State state;
 	Board board;
 	private int[] start;
@@ -41,12 +41,12 @@ public class LouvelBFS {
 		ArrayList<int[]> resultat = new ArrayList<>();
 		traited = new HashSet<>();
 		if (recursive(resultat, start)) {
-//			resultat.add(start);
-//			Utils.printList("RESULTAT : ", resultat);
+			// resultat.add(start);
+			// Utils.printList("RESULTAT : ", resultat);
 		}
-//
-//		resultat.add(end);
-//		Utils.printList("RESULTAT : ", resultat);
+		//
+		// resultat.add(end);
+		// Utils.printList("RESULTAT : ", resultat);
 
 		int[] tmp = null;
 		String s = reverse.get(Utils.positionToString(end));
@@ -58,11 +58,10 @@ public class LouvelBFS {
 			tmp = Utils.stringToPosition(reverse.get(Utils
 					.positionToString(tmp)));
 			debug(Utils.positionToString(tmp));
-			if (!equals(tmp, start)) {
-				resultat.add(tmp);
-				Utils.printList("RESULTAT : ", resultat);
-			}
+			resultat.add(tmp);
+			Utils.printList("RESULTAT : ", resultat);
 		}
+
 		Utils.printList("RESULTAT : ", resultat);
 		Collections.reverse(resultat);
 		Utils.printList("RESULTAT : ", resultat);
@@ -102,7 +101,7 @@ public class LouvelBFS {
 		int[] p = null;
 		if (!queue.isEmpty()) {
 			p = queue.remove(0);
-//			debug("Traitement de : " + Utils.positionToString(p));
+			// debug("Traitement de : " + Utils.positionToString(p));
 		} else {
 			return true;
 		}
@@ -156,7 +155,7 @@ public class LouvelBFS {
 			System.out.println(s);
 		}
 	}
-	
+
 	public void addMap(String key, String val) {
 		reverse.put(val, key);
 	}
