@@ -14,14 +14,16 @@ import bee.gus.client.State;
 public class GusBot1 implements Bot {
 	
 	public static final int TURNS = 40;
-	public static final String MAP = "m1";
+	public static final String MAP = "m3";
 	//public static final String MAP = null;
 	
 	public static final boolean PRINT1 = true;
 	public static final boolean PRINT2 = false;
 	
+	public static final boolean USE_SHORTCUTS = false;
 	
-	public static final int WEAK_LEVEL = 25;
+	
+	public static final int WEAK_LEVEL = 35;
 	public static final int ABIT_THIRSTY_LEVEL = 70;
 	public static final int VERY_THIRSTY_LEVEL = 30;
 	public static final int AGGRESSIVE_LEVEL = 10;
@@ -46,6 +48,9 @@ public class GusBot1 implements Bot {
 	
 	
 	
+	
+	
+	
 	public Direction nextMove(State state)
 	{
 		Direction d = nextMove_(state);
@@ -66,35 +71,41 @@ public class GusBot1 implements Bot {
 			println1("------------------------");
 			println1("turn: "+turn+"/"+totalTurn+" life: "+me.life+" me: "+toString(me_));
 			println1();
-			
-			
-			if(canFightMine())
+
+
+			if(USE_SHORTCUTS)
 			{
-				if(isTargetMine(westTile())) return shortcut("W->mine!",Direction.WEST);
-				if(isTargetMine(eastTile())) return shortcut("E->mine!",Direction.EAST);
-				if(isTargetMine(northTile())) return shortcut("N->mine!",Direction.NORTH);
-				if(isTargetMine(southTile())) return shortcut("S->mine!",Direction.SOUTH);
+				if(canFightMine())
+				{
+					if(isTargetMine(westTile())) return shortcut("W->mine!",Direction.WEST,true);
+					if(isTargetMine(eastTile())) return shortcut("E->mine!",Direction.EAST,true);
+					if(isTargetMine(northTile())) return shortcut("N->mine!",Direction.NORTH,true);
+					if(isTargetMine(southTile())) return shortcut("S->mine!",Direction.SOUTH,true);
+				}
+
+				if(isABitThirsty())
+				{
+					if(isBeer(westTile())) return shortcut("W->beer!",Direction.WEST,false);
+					if(isBeer(eastTile())) return shortcut("E->beer!",Direction.EAST,false);
+					if(isBeer(northTile())) return shortcut("N->beer!",Direction.NORTH,false);
+					if(isBeer(southTile())) return shortcut("S->beer!",Direction.SOUTH,false);
+				}
+
+				if(isAgressive())
+				{
+					if(isHero(westTile())) return shortcut("W->hero!",Direction.WEST,false);
+					if(isHero(eastTile())) return shortcut("E->hero!",Direction.EAST,false);
+					if(isHero(northTile())) return shortcut("N->hero!",Direction.NORTH,false);
+					if(isHero(southTile())) return shortcut("S->hero!",Direction.SOUTH,false);
+				}
 			}
-			
-			if(isABitThirsty())
-			{
-				if(isBeer(westTile())) return shortcut("W->beer!",Direction.WEST);
-				if(isBeer(eastTile())) return shortcut("E->beer!",Direction.EAST);
-				if(isBeer(northTile())) return shortcut("N->beer!",Direction.NORTH);
-				if(isBeer(southTile())) return shortcut("S->beer!",Direction.SOUTH);
-			}
-			
-			if(isAgressive())
-			{
-				if(isHero(westTile())) return shortcut("W->hero!",Direction.WEST);
-				if(isHero(eastTile())) return shortcut("E->hero!",Direction.EAST);
-				if(isHero(northTile())) return shortcut("N->hero!",Direction.NORTH);
-				if(isHero(southTile())) return shortcut("S->hero!",Direction.SOUTH);
-			}
-			
-			
-			if(path==null) startStrategy();
-			if(hasPath()) return walkInsidePath();
+
+
+			if(path==null || isVeryThirsty())
+				startStrategy();
+
+			if(hasPath())
+				return walkInsidePath();
 			
 			
 			println1("IDLE (-_-)");
@@ -111,16 +122,14 @@ public class GusBot1 implements Bot {
 	
 	
 	
-	
-	private Direction shortcut(String title, Direction d)
+
+	private Direction shortcut(String title, Direction d, boolean reset)
 	{
-		int[] target = targetPosition(d);
-		if(equals(target,pathEnd())) resetPath();
-		
+		if(reset) resetPath();
 		println1(title+" shortcut to "+d.name+" (life="+me.life+")");
 		return d;
 	}
-	
+
 	
 	
 	
@@ -307,6 +316,7 @@ public class GusBot1 implements Bot {
 		{
 			int[] minePosition = new int[]{i,j};
 			double d = distance(minePosition,me_);
+			println1("distance to mine "+toString(minePosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
@@ -336,7 +346,7 @@ public class GusBot1 implements Bot {
 		{
 			int[] beerPosition = new int[]{i,j};
 			double d = distance(beerPosition,me_);
-			println1("distance to "+toString(beerPosition)+" = "+d);
+			println1("distance to beer "+toString(beerPosition)+" = "+d);
 			if(d<d_min)
 			{
 				d_min = d;
@@ -416,11 +426,13 @@ public class GusBot1 implements Bot {
 	
 	
 	
-//	private boolean isFreeMine(Board.Tile tile)
-//	{
-//		if(tile==null) return false;
-//		return tile.equals(Board.Tile.FREE_MINE);
-//	}
+	private boolean isMine(Board.Tile tile)
+	{
+		if(tile==null) return false;
+		String desc = tile.toString();
+		return desc.startsWith("$");
+	}
+	
 	
 	
 	
@@ -526,6 +538,7 @@ public class GusBot1 implements Bot {
 	
 	private void resetPath()
 	{
+		println1("reseting path");
 		path=null;
 		pathLength=-1;
 	}
@@ -537,6 +550,7 @@ public class GusBot1 implements Bot {
 	private int[] pathEnd()
 	{return path==null || path.length==0?null:path[path.length-1];}
 
+	
 	
 	
 	private String pathToString1()

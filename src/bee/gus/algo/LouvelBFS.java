@@ -35,6 +35,10 @@ public class LouvelBFS {
 
 		this.freeTiles = new ArrayList<>();
 		freeTiles.add("  ");
+		freeTiles.add("@1");
+		freeTiles.add("@2");
+		freeTiles.add("@3");
+		freeTiles.add("@4");
 	}
 
 	ArrayList<int[]> getDistance() {
