@@ -68,12 +68,17 @@ public class GusBot1 implements Bot {
 	
 	public Direction nextMove(State state)
 	{
+		long t1 = System.currentTimeMillis();
+		
 		int gold = state.hero().gold;
 		int life = state.hero().life;
 		int turn = state.game.turn/4;
 		
 		Direction d = nextMove_(state);
-		println2(turn+": DIRECTION FINAL = "+d+" life="+life+" gold="+gold+" (best="+bestGold()+")");
+		
+		long dt = t1 - System.currentTimeMillis();
+		
+		println2(turn+": DIRECTION FINAL = "+d+" life="+life+" gold="+gold+" (best="+bestGold()+") dt="+dt+" ms");
 		
 		return d;
 	}
