@@ -1,7 +1,5 @@
 package bee.gus.bots;
 
-import java.util.List;
-
 import bee.gus.algo.GusDFSHolder;
 import bee.gus.algo.LouvelBFS;
 import bee.gus.background.Background;
@@ -68,7 +66,7 @@ public class GusBot1 implements Bot {
 	
 	public Direction nextMove(State state)
 	{
-		long t1 = System.currentTimeMillis();
+		long t1 = System.nanoTime();
 		
 		int gold = state.hero().gold;
 		int life = state.hero().life;
@@ -76,9 +74,9 @@ public class GusBot1 implements Bot {
 		
 		Direction d = nextMove_(state);
 		
-		long dt = t1 - System.currentTimeMillis();
+		long dt = System.nanoTime() - t1;
 		
-		println2(turn+": DIRECTION FINAL = "+d+" life="+life+" gold="+gold+" (best="+bestGold()+") dt="+dt+" ms");
+		println2(turn+": DIRECTION = "+d+" life="+life+" gold="+gold+" (best="+bestGold()+") dt="+dt+"ns");
 		
 		return d;
 	}
